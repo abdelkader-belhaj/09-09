@@ -1,0 +1,41 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+        firebase_users:
+            memory:
+                users: []
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        
+        # Firewall spécifique pour l'API (utilise Firebase)
+        api:
+            pattern: ^/api
+            lazy: true
+            provider: firebase_users
+            custom_authenticators:
+                - App\Security\FirebaseAuthenticator
+            stateless: true
+        
+        # Firewall principal (pas de sécurité automatique - gestion manuelle dans les contrôleurs)
+        main:
+            pattern: ^/
+            lazy: true
+            # Pas d'authenticator - vous gérez l'authentification manuellement
+            logout:
+                path: app_logout
+
+    access_control:
+        # Toutes les routes sont publiques - vous gérez l'accès dans vos contrôleurs
+        # Ceci permet à votre système de session de fonctionner
+        - { path: ^/, roles: PUBLIC_ACCESS }
